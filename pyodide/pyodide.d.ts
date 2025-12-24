@@ -53,45 +53,27 @@ type FSStreamOpsGen<T> = {
 	read: (a: T, b: Uint8Array, offset: number, length: number, pos: number) => number;
 	write: (a: T, b: Uint8Array, offset: number, length: number, pos: number) => number;
 };
-interface FSType {
-	unlink: (path: string) => void;
+/** @deprecated Use `import type { PyodideFSType } from "pyodide/ffi"` instead */
+interface PyodideFSType {
 	mkdirTree: (path: string, mode?: number) => void;
-	chdir: (path: string) => void;
-	symlink: (target: string, src: string) => FSNode;
 	createDevice: ((parent: string, name: string, input?: (() => number | null) | null, output?: ((code: number) => void) | null) => FSNode) & {
 		major: number;
 	};
-	closeStream: (fd: number) => void;
-	open: (path: string, flags: string | number, mode?: number) => FSStream;
-	makedev: (major: number, minor: number) => number;
-	mkdev: (path: string, dev: number) => FSNode;
-	filesystems: any;
-	stat: (path: string, dontFollow?: boolean) => any;
-	readdir: (path: string) => string[];
-	isDir: (mode: number) => boolean;
-	isMountpoint: (mode: FSNode) => boolean;
 	lookupPath: (path: string, options?: {
 		follow_mount?: boolean;
 	}) => {
 		node: FSNode;
 	};
-	isFile: (mode: number) => boolean;
+	open: (path: string, flags: string | number, mode?: number) => FSStream;
+	filesystems: any;
+	isMountpoint: (node: FSNode) => boolean;
+	closeStream: (fd: number) => void;
+	registerDevice<T>(dev: number, ops: FSStreamOpsGen<T>): void;
 	writeFile: (path: string, contents: any, o?: {
 		canOwn?: boolean;
 	}) => void;
-	chmod: (path: string, mode: number) => void;
-	utime: (path: string, atime: number, mtime: number) => void;
-	rmdir: (path: string) => void;
-	mount: (type: any, opts: any, mountpoint: string) => any;
-	unmount: (mountpoint: string) => any;
-	write: (stream: FSStream, buffer: any, offset: number, length: number, position?: number) => number;
-	close: (stream: FSStream) => void;
-	ErrnoError: {
-		new (errno: number): Error;
-	};
-	registerDevice<T>(dev: number, ops: FSStreamOpsGen<T>): void;
-	syncfs(dir: boolean, oncomplete: (val: void) => void): void;
 }
+type FSType = Omit<typeof FS, "lookupPath"> & PyodideFSType;
 /**
  * The lockfile platform info. The ``abi_version`` field is used to check if the
  * lockfile is compatible with the interpreter. The remaining fields are
